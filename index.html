@@ -1,234 +1,281 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>INOVEX25 | Civic Reporter</title>
-
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-<!-- Leaflet for map -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- Open Location Code (Plus Codes) -->
-<script src="https://cdn.jsdelivr.net/npm/open-location-code@1.0.4/open-location-code.min.js"></script>
-
-<style>
-*{box-sizing:border-box;margin:0;padding:0;font-family:"Segoe UI",sans-serif;}
-body{
-  background: linear-gradient(135deg, #f0f4f8, #d9e2ef);
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:20px;
-}
-.container{
-  width:100%;
-  max-width:900px;
-  display:flex;
-  gap:20px;
-  flex-wrap:wrap;
-}
-.card{
-  flex:1 1 350px;
-  background:#fff;
-  padding:24px;
-  border-radius:16px;
-  box-shadow:0 8px 24px rgba(0,0,0,0.12);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,0.16);}
-h2{text-align:center;margin-bottom:20px;color:#2c7be5;font-size:22px;}
-label{font-weight:600;margin-top:12px;display:block;color:#333;font-size:15px;}
-input,textarea{width:100%;padding:12px;margin-top:6px;border:1px solid #ccd6eb;border-radius:10px;font-size:15px;transition:border-color 0.3s,box-shadow 0.3s;}
-input:focus,textarea:focus{border-color:#2c7be5;box-shadow:0 0 6px rgba(44,123,229,0.3);}
-textarea{resize:none;}
-button{
-  margin-top:14px;padding:12px;width:100%;
-  border:none;border-radius:12px;
-  background: linear-gradient(135deg,#2c7be5,#00c6ff);
-  color:white;font-size:16px;font-weight:600;cursor:pointer;
-  box-shadow:0 6px 14px rgba(0,0,0,0.12);
-  transition:0.3s;
-}
-button:hover{background: linear-gradient(135deg,#1b5fbd,#0090d3);}
-#locDisplay{margin-top:8px;font-size:14px;color:#555;text-align:center;}
-#status{margin-top:16px;text-align:center;font-weight:600;font-size:15px;padding:10px;border-radius:10px;transition:all 0.3s ease;}
-.success{color:#0f8b3e;background:#e0f6e6;}
-.error{color:#c23616;background:#ffe7e4;}
-#preview{margin-top:16px;padding:20px;border-radius:16px;background:#fefefe;display:none;box-shadow:0 8px 20px rgba(0,0,0,0.12);}
-#preview:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,0.16);}
-#preview img{max-width:100%;border-radius:12px;margin-top:12px;object-fit:cover;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
-#map{width:100%;height:250px;border-radius:12px;margin-top:12px;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
-#pDesc,#pLoc,#pAddr{color:#444;line-height:1.5;transition:color 0.3s,font-size 0.3s;}
-@media(max-width:768px){.container{flex-direction:column;align-items:stretch;}#map{height:220px;}}
-</style>
+  <meta charset="UTF-8">
+  <title>INOVEX25 | Civic Reporter</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg,#2c7be5,#00c6ff);
+      margin: 0; padding: 20px;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex; flex-direction: row; gap: 20px; flex-wrap: wrap;
+    }
+    .card {
+      flex: 1 1 400px;
+      background: white; padding: 24px; border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+      animation: fadeIn 0.6s ease;
+    }
+    @keyframes fadeIn {
+      from {opacity:0; transform: translateY(20px);}
+      to {opacity:1; transform: translateY(0);}
+    }
+    h2 { text-align: center; margin-bottom: 18px; color: #2c7be5; }
+    label { font-weight: 600; margin-top: 12px; display: block; color: #333; }
+    textarea,input,select { width:100%; padding:12px; margin-top:6px;
+      border:1px solid #ddd; border-radius:8px; font-size:15px;
+    }
+    textarea { resize:none; }
+    button {
+      margin-top:14px; padding:12px; width:100%;
+      border:none; border-radius:8px; background:#2c7be5;
+      color:white; font-size:16px; font-weight:600; cursor:pointer;
+      transition:0.2s;
+    }
+    button:hover { background:#1b5fbd; }
+    #locDisplay { margin-top:8px; font-size:14px; color:#555; text-align:center; }
+    #status { margin-top:16px; text-align:center; font-weight:600; }
+    .success { color:green; }
+    .error { color:red; }
+    #preview {
+      margin-top:16px; padding:12px; border:1px solid #eee;
+      border-radius:10px; background:#f9f9f9; display:none;
+    }
+    #preview img { max-width:100%; border-radius:8px; margin-top:8px; }
+    #map { height:300px; margin-top:12px; border-radius:10px; }
+    #suggestionsList div { padding:6px; cursor:pointer; border-bottom:1px solid #eee; }
+    #suggestionsList div:hover { background:#f0f0f0; }
+    @media(max-width:768px) { .container { flex-direction:column; align-items:stretch; } }
+  </style>
 </head>
 <body>
-<div class="container">
-  <!-- Form Card -->
-  <div class="card">
-    <h2><i class="fa-solid fa-triangle-exclamation"></i> Report Issue</h2>
+  <div class="container">
+    <!-- Form Card -->
+    <div class="card">
+      <h2><i class="fa-solid fa-triangle-exclamation"></i> <span id="titleLabel">Report Issue</span></h2>
 
-    <label><i class="fa-solid fa-pen"></i> Description</label>
-    <textarea id="desc" rows="3" placeholder="e.g. Overflowing drainage near park"></textarea>
-    <button type="button" id="micBtn"><i class="fa-solid fa-microphone"></i> Speak</button>
+      <label id="descLabel"><i class="fa-solid fa-pen"></i> Description</label>
+      <textarea id="desc" rows="3" placeholder="e.g. Overflowing drainage near park"></textarea>
+      
+      <label>Select Language</label>
+      <select id="langSelect">
+        <option value="en-IN">English (India)</option>
+        <option value="hi-IN">Hindi</option>
+        <option value="bn-IN">Bengali</option>
+        <option value="mr-IN">Marathi</option>
+        <option value="ta-IN">Tamil</option>
+        <option value="te-IN">Telugu</option>
+        <option value="kn-IN">Kannada</option>
+        <option value="gu-IN">Gujarati</option>
+        <option value="ml-IN">Malayalam</option>
+        <option value="pa-IN">Punjabi</option>
+        <option value="or-IN">Odia</option>
+        <option value="as-IN">Assamese</option>
+        <option value="ur-IN">Urdu</option>
+        <option value="kok-IN">Konkani</option>
+      </select>
+      <button type="button" id="micBtn"><i class="fa-solid fa-microphone"></i> Speak</button>
 
-    <label><i class="fa-solid fa-camera"></i> Upload Photo</label>
-    <input id="photo" type="file" accept="image/*" capture="environment">
+      <label><i class="fa-solid fa-camera"></i> Upload Photo</label>
+      <input id="photo" type="file" accept="image/*" capture="environment">
 
-    <label><i class="fa-solid fa-location-dot"></i> Search Location</label>
-    <input id="searchInput" type="text" placeholder="Enter address or landmark">
-    <label><i class="fa-solid fa-map-location"></i> Or Manual Address</label>
-    <input id="manualAddr" type="text" placeholder="Enter full address for reference">
+      <label><i class="fa-solid fa-location-dot"></i> Location</label>
+      <button id="locBtn" type="button">Use My GPS Location</button>
+      <input type="text" id="manualAddr" placeholder="Or enter address manually">
+      <div id="suggestionsDiv"></div>
+      <span id="locDisplay">Lat: -, Lng: -</span>
 
-    <button id="locBtn" type="button"><i class="fa-solid fa-location-dot"></i> Use My Location</button>
-    <span id="locDisplay">Lat: -, Lng: -</span>
+      <div id="map"></div>
 
-    <button id="submitBtn"><i class="fa-solid fa-paper-plane"></i> Submit Issue</button>
-    <div id="status">You can drag the pin or search for address if location is inaccurate.</div>
+      <button id="submitBtn"><i class="fa-solid fa-paper-plane"></i> Submit Issue</button>
+      <div id="status"></div>
+    </div>
+
+    <!-- Preview Card -->
+    <div class="card" id="preview">
+      <h2>📋 Preview</h2>
+      <p id="pDesc"></p>
+      <img id="pImg" src="" alt="">
+      <p id="pLoc"></p>
+      <p id="pAddr"></p>
+    </div>
   </div>
 
-  <!-- Preview Card -->
-  <div class="card" id="preview">
-    <h2>📋 Preview</h2>
-    <p id="pDesc"></p>
-    <img id="pImg" src="" alt="">
-    <p id="pLoc"></p>
-    <p id="pAddr"></p>
-    <div id="map"></div>
-  </div>
-</div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-<script>
-const N8N_WEBHOOK_URL="https://your-n8n/webhook/report";
-const CLOUD_NAME="your_cloud_name";
-const UPLOAD_PRESET="your_unsigned_preset";
+  <script>
+  const N8N_WEBHOOK_URL="https://your-n8n/webhook/report";
+  const CLOUD_NAME="your_cloud_name";
+  const UPLOAD_PRESET="your_unsigned_preset";
 
-let lat=null,lng=null,accuracy=null;
-const descEl=document.getElementById("desc");
-const photoEl=document.getElementById("photo");
-const preview=document.getElementById("preview");
-const pDesc=document.getElementById("pDesc");
-const pImg=document.getElementById("pImg");
-const pLoc=document.getElementById("pLoc");
-const pAddr=document.getElementById("pAddr");
-const locBtn=document.getElementById("locBtn");
-const submitBtn=document.getElementById("submitBtn");
-const status=document.getElementById("status");
-const mapDiv=document.getElementById("map");
-const searchInput=document.getElementById("searchInput");
-const manualAddr=document.getElementById("manualAddr");
+  let lat=null, lng=null, accuracy=0;
+  const descEl=document.getElementById("desc");
+  const photoEl=document.getElementById("photo");
+  const pDesc=document.getElementById("pDesc");
+  const pImg=document.getElementById("pImg");
+  const pLoc=document.getElementById("pLoc");
+  const pAddr=document.getElementById("pAddr");
+  const locBtn=document.getElementById("locBtn");
+  const submitBtn=document.getElementById("submitBtn");
+  const micBtn=document.getElementById("micBtn");
+  const status=document.getElementById("status");
+  const manualAddr=document.getElementById("manualAddr");
+  const suggestionsDiv=document.getElementById("suggestionsDiv");
+  const langSelect=document.getElementById("langSelect");
 
-let map,marker,circle;
+  // --- Map Setup ---
+  let map, marker, circle;
+  function initMap(){
+    if(map) map.remove();
+    map=L.map('map').setView([20.5937,78.9629],5); // India center
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+    marker=L.marker([lat||20.5937,lng||78.9629],{draggable:true}).addTo(map);
+    circle=L.circle([lat||20.5937,lng||78.9629],{radius:accuracy||50}).addTo(map);
+    marker.on('dragend',function(){
+      const pos=marker.getLatLng();
+      lat=pos.lat.toFixed(6);
+      lng=pos.lng.toFixed(6);
+      circle.setLatLng(pos);
+      pLoc.textContent=`📍 ${lat}, ${lng}`;
+      status.textContent="🔍 Location updated via drag-and-drop. Adjust if needed.";
+    });
+  }
+  initMap();
 
-function updatePreview(){
-  if(descEl.value||photoEl.files[0]||(lat&&lng)){
+  // --- Preview ---
+  function updatePreview(){
     pDesc.textContent=descEl.value||"No description yet";
-    if(photoEl.files[0]){pImg.src=URL.createObjectURL(photoEl.files[0]);pImg.style.display="block";}else{pImg.style.display="none";}
-    pLoc.textContent=(lat&&lng)?`📍 ${lat}, ${lng} (±${accuracy||"?"} m)`:"";
-    pAddr.textContent=manualAddr.value?`🏠 Address: ${manualAddr.value}`:"";
-    preview.style.display="block";
-    if(lat&&lng) mapDiv.style.display="block";
-  }else{preview.style.display="none";mapDiv.style.display="none";}
-}
-descEl.addEventListener("input",updatePreview);
-photoEl.addEventListener("change",updatePreview);
-manualAddr.addEventListener("input",updatePreview);
+    if(photoEl.files[0]){
+      pImg.src=URL.createObjectURL(photoEl.files[0]);
+      pImg.style.display="block";
+    } else pImg.style.display="none";
+    pLoc.textContent=(lat&&lng)?`📍 ${lat}, ${lng}`:"";
+    pAddr.textContent=manualAddr.value?"🏠 "+manualAddr.value:"";
+    document.getElementById("preview").style.display="block";
+  }
 
-// Voice Input
-document.getElementById("micBtn").onclick=()=>{
-  if(!('webkitSpeechRecognition' in window)){alert("Speech recognition not supported");return;}
-  const recog=new webkitSpeechRecognition();
-  recog.lang="en-IN";
-  recog.start();
-  recog.onresult=(e)=>{ descEl.value+=" "+e.results[0][0].transcript; updatePreview(); };
-};
+  descEl.addEventListener("input",updatePreview);
+  photoEl.addEventListener("change",updatePreview);
+  manualAddr.addEventListener("input",updatePreview);
 
-// Map Init
-function initMap(){
-  if(!lat||!lng) return;
-  if(!map){
-    map=L.map('map').setView([lat,lng],17);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
-    marker=L.marker([lat,lng],{draggable:true}).addTo(map);
-    circle=L.circle([lat,lng],{radius:accuracy||30,color:'#2c7be5',fillColor:'#2c7be5',fillOpacity:0.1}).addTo(map);
-    marker.on('dragend',()=>{const pos=marker.getLatLng();lat=pos.lat.toFixed(6);lng=pos.lng.toFixed(6);updatePreview();status.textContent="📌 Pin dragged. Coordinates updated. Adjust address if needed.";circle.setLatLng(pos);});
-  }else{marker.setLatLng([lat,lng]);map.setView([lat,lng],17);circle.setLatLng([lat,lng]);}
-}
+  // --- Speech-to-text ---
+  micBtn.onclick=()=>{
+    if(!('webkitSpeechRecognition' in window)){ alert("Speech recognition not supported"); return;}
+    const recog=new webkitSpeechRecognition();
+    recog.lang=langSelect.value;
+    recog.continuous=false;
+    recog.interimResults=false;
+    recog.start();
+    status.textContent="🎤 Listening...";
+    recog.onresult=(e)=>{
+      descEl.value+=" "+e.results[0][0].transcript;
+      updatePreview();
+      status.textContent="✅ Speech recognized.";
+    };
+    recog.onerror=(e)=>{status.textContent="❌ Speech error: "+e.error;}
+    recog.onend=()=>{status.textContent+=" Click mic to speak again.";}
+  };
 
-// Location Button
-locBtn.onclick=()=>{
-  if(!navigator.geolocation){alert("Geolocation not supported"); return;}
-  status.textContent="📍 Getting location… If inaccurate, search or drag pin.";
-  navigator.geolocation.getCurrentPosition((pos)=>{
-    lat=pos.coords.latitude.toFixed(6);
-    lng=pos.coords.longitude.toFixed(6);
-    accuracy=Math.round(pos.coords.accuracy);
-    document.getElementById("locDisplay").textContent=`Lat: ${lat}, Lng: ${lng} (±${accuracy} m)`;
-    updatePreview();initMap();status.textContent="📍 Location detected. Adjust pin or address if needed.";
-  },()=>{alert("Location not available");status.textContent="❌ Could not get location.";});
-};
-
-// Address Search
-searchInput.addEventListener("keypress",async(e)=>{
-  if(e.key==="Enter"){ e.preventDefault();
-    const query=searchInput.value.trim();
-    if(!query) return;
-    status.textContent="🔍 Searching address…";
-    try{
-      const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
-      const data=await res.json();
-      if(data.length===0){status.textContent="⚠️ Address not found. Drag pin manually.";return;}
-      lat=parseFloat(data[0].lat).toFixed(6);
-      lng=parseFloat(data[0].lon).toFixed(6);
-      accuracy=50;
+  // --- GPS Location ---
+  locBtn.onclick=()=>{
+    if(!navigator.geolocation){alert("Geolocation not supported"); return;}
+    status.textContent="📍 Getting GPS location...";
+    navigator.geolocation.getCurrentPosition((pos)=>{
+      lat=pos.coords.latitude.toFixed(6);
+      lng=pos.coords.longitude.toFixed(6);
+      accuracy=pos.coords.accuracy;
       updatePreview();
       initMap();
       map.setView([lat,lng],17);
       marker.setLatLng([lat,lng]);
       circle.setLatLng([lat,lng]);
-      status.textContent="🔍 Address found. Drag pin to fine-tune if needed.";
-    }catch(err){console.error(err);status.textContent="❌ Search failed.";}
-  }
-});
+      status.textContent="✅ GPS location detected. Adjust pin if needed.";
+    },()=>{
+      alert("Location unavailable"); status.textContent="";
+    });
+  };
 
-// Cloudinary Upload
-async function uploadToCloudinary(file){
-  const url=`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`;
-  const fd=new FormData();
-  fd.append("upload_preset",UPLOAD_PRESET);
-  fd.append("file",file);
-  const r=await fetch(url,{method:"POST",body:fd});
-  if(!r.ok) throw new Error("Cloudinary upload failed: "+r.status);
-  const data=await r.json();
-  return data.secure_url;
-}
+  // --- Address Search ---
+  let debounceTimeout;
+  manualAddr.addEventListener("input",()=>{
+    const query=manualAddr.value.trim();
+    if(!query){suggestionsDiv.innerHTML=""; return;}
+    clearTimeout(debounceTimeout);
+    debounceTimeout=setTimeout(async()=>{
+      try{
+        const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`);
+        const data=await res.json();
+        if(data.length===0){suggestionsDiv.innerHTML=""; return;}
+        const list=document.createElement("div"); list.id="suggestionsList";
+        data.forEach(item=>{
+          const div=document.createElement("div");
+          div.textContent=item.display_name;
+          div.onclick=()=>{
+            lat=parseFloat(item.lat).toFixed(6);
+            lng=parseFloat(item.lon).toFixed(6);
+            accuracy=50;
+            updatePreview();
+            map.setView([lat,lng],17);
+            marker.setLatLng([lat,lng]);
+            circle.setLatLng([lat,lng]);
+            manualAddr.value=item.display_name;
+            suggestionsDiv.innerHTML="";
+            status.textContent="🔍 Location set from suggestions. Drag pin if fine-tuning needed.";
+          };
+          list.appendChild(div);
+        });
+        suggestionsDiv.innerHTML=""; suggestionsDiv.appendChild(list);
+      }catch(err){console.error(err);}
+    },300);
+  });
 
-// Submit
-submitBtn.onclick=async()=>{
-  const desc=descEl.value.trim();
-  const file=photoEl.files[0];
-  if(!desc){alert("Please enter a description"); return;}
-  if(!lat||!lng){alert("Please provide location by pin or search"); return;}
-  submitBtn.disabled=true;
-  status.textContent="⏳ Uploading...";status.className="";
-  try{
-    let photo_url="";
-    if(file) photo_url=await uploadToCloudinary(file);
-    const plusCode=openLocationCode.encode(lat,lng);
-    const maps_link=`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=17`;
-    const payload={description:desc,lat,lng,accuracy,photo_url,plus_code:plusCode,osm_link:maps_link,manual_address:manualAddr.value,source:"Web"};
-    const r=await fetch(N8N_WEBHOOK_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
-    if(!r.ok) throw new Error("n8n returned "+r.status);
+  // --- Cloudinary Upload ---
+  async function uploadToCloudinary(file){
+    const url=`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`;
+    const fd=new FormData();
+    fd.append("upload_preset",UPLOAD_PRESET);
+    fd.append("file",file);
+    const r=await fetch(url,{method:"POST",body:fd});
+    if(!r.ok) throw new Error("Cloudinary upload failed: "+r.status);
     const data=await r.json();
-    status.innerHTML=`✅ Submitted!<br>Ticket: ${data.ticket_id||"N/A"}<br>Category: ${data.category||"Unknown"}<br>Sentiment: ${data.sentiment||"Neutral"}`;
-    status.className="success";
-  }catch(e){console.error(e);status.textContent="❌ "+e.message;status.className="error";}
-  finally{submitBtn.disabled=false;}
-};
-</script>
+    return data.secure_url;
+  }
+
+  // --- Submit ---
+  submitBtn.onclick=async()=>{
+    const desc=descEl.value.trim();
+    const file=photoEl.files[0];
+    if(!desc){alert("Please enter a description"); return;}
+    if(!lat||!lng){alert("Provide location via GPS, pin, or search"); return;}
+    submitBtn.disabled=true; status.textContent="⏳ Uploading..."; status.className="";
+    try{
+      let photo_url=""; if(file) photo_url=await uploadToCloudinary(file);
+      const maps_link=`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}&zoom=17`;
+      const payload={
+        description:desc,
+        lat,lng,accuracy,photo_url,
+        osm_link:maps_link,
+        manual_address:manualAddr.value,
+        source:"Web",
+        language:langSelect.value
+      };
+      const r=await fetch(N8N_WEBHOOK_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      if(!r.ok) throw new Error("n8n returned "+r.status);
+      const data=await r.json();
+      status.innerHTML=`✅ Submitted!<br>Ticket: ${data.ticket_id||"N/A"}<br>Category: ${data.category||"Unknown"}<br>Sentiment: ${data.sentiment||"Neutral"}`;
+      status.className="success";
+    }catch(e){console.error(e); status.textContent="❌ "+e.message; status.className="error";}
+    finally{submitBtn.disabled=false;}
+  };
+  </script>
 </body>
 </html>
